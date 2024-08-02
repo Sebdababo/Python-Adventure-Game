@@ -1,22 +1,51 @@
 import random
+import json
+import os
 
 inventory = []
 player_health = 100
 enemy_health = 50
 game_over = False
 score = 0
+player_name = ""
+
+def load_game():
+    global inventory, player_health, score, player_name
+    if os.path.exists("savegame.json"):
+        with open("savegame.json", "r") as f:
+            data = json.load(f)
+            inventory = data["inventory"]
+            player_health = data["player_health"]
+            score = data["score"]
+            player_name = data["player_name"]
+        print(f"Welcome back, {player_name}!")
+        return True
+    return False
+
+def save_game():
+    data = {
+        "inventory": inventory,
+        "player_health": player_health,
+        "score": score,
+        "player_name": player_name
+    }
+    with open("savegame.json", "w") as f:
+        json.dump(data, f)
+    print("Game saved successfully!")
 
 def start_game():
+    global player_name
     print("Welcome to the Text Adventure!")
-    player_name = input("Enter your name: ")
-    print(f"Hello, {player_name}! Your adventure begins...")
+    if not load_game():
+        player_name = input("Enter your name: ")
+        print(f"Hello, {player_name}! Your adventure begins...")
     return player_name
 
 def explore_room(player_name):
     print(f"{player_name}, you find yourself in a dimly lit room.")
     print("You see a door to the north and a window to the east.")
     while True:
-        choice = input("What do you want to do? (north/east/inventory/status/quit): ").lower()
+        choice = input("What do you want to do? (north/east/inventory/status/save/quit): ").lower()
         if choice == "north":
             return explore_hallway
         elif choice == "east":
@@ -25,6 +54,8 @@ def explore_room(player_name):
             show_inventory(player_name)
         elif choice == "status":
             show_status(player_name)
+        elif choice == "save":
+            save_game()
         elif choice == "quit":
             return None
         else:
@@ -34,7 +65,7 @@ def explore_hallway(player_name):
     print("You open the door and step into a hallway.")
     print("You see a staircase going up and a door to the west.")
     while True:
-        choice = input("What do you want to do? (up/west/inventory/status/quit): ").lower()
+        choice = input("What do you want to do? (up/west/inventory/status/save/quit): ").lower()
         if choice == "up":
             return explore_second_floor
         elif choice == "west":
@@ -43,6 +74,8 @@ def explore_hallway(player_name):
             show_inventory(player_name)
         elif choice == "status":
             show_status(player_name)
+        elif choice == "save":
+            save_game()
         elif choice == "quit":
             return None
         else:
@@ -54,7 +87,7 @@ def explore_garden(player_name):
     if "mysterious key" not in inventory:
         print("You notice a key hidden among the flowers.")
         while True:
-            choice = input("Do you want to get the key? (yes/no/inventory/status/quit): ").lower()
+            choice = input("Do you want to get the key? (yes/no/inventory/status/save/quit): ").lower()
             if choice == "yes":
                 print("You've obtained a mysterious key!")
                 inventory.append("mysterious key")
@@ -68,6 +101,8 @@ def explore_garden(player_name):
                 show_inventory(player_name)
             elif choice == "status":
                 show_status(player_name)
+            elif choice == "save":
+                save_game()
             elif choice == "quit":
                 return None
             else:
@@ -82,7 +117,7 @@ def explore_second_floor(player_name):
     print("You see a locked door with a keyhole.")
     if "mysterious key" in inventory:
         while True:
-            choice = input("Do you want to use the mysterious key? (yes/no/inventory/status/quit): ").lower()
+            choice = input("Do you want to use the mysterious key? (yes/no/inventory/status/save/quit): ").lower()
             if choice == "yes":
                 print("The key fits! You unlock the door and find a treasure chest!")
                 score += 20
@@ -96,6 +131,8 @@ def explore_second_floor(player_name):
                 show_inventory(player_name)
             elif choice == "status":
                 show_status(player_name)
+            elif choice == "save":
+                save_game()
             elif choice == "quit":
                 return None
             else:
@@ -109,7 +146,7 @@ def explore_library(player_name):
     print("You open the door and find a library.")
     print("There's a book on a pedestal that seems important.")
     while True:
-        choice = input("Do you want to read the book? (yes/no/inventory/status/quit): ").lower()
+        choice = input("Do you want to read the book? (yes/no/inventory/status/save/quit): ").lower()
         if choice == "yes":
             print("The book contains a clue: 'The key to your success lies in nature's embrace.'")
             score += 5
@@ -122,6 +159,8 @@ def explore_library(player_name):
             show_inventory(player_name)
         elif choice == "status":
             show_status(player_name)
+        elif choice == "save":
+            save_game()
         elif choice == "quit":
             return None
         else:
@@ -143,13 +182,17 @@ def battle(player_name):
     print("A battle begins!")
     while player_health > 0 and enemy_health > 0:
         print(f"Your health: {player_health} | Enemy health: {enemy_health}")
-        choice = input("Do you want to attack or defend? ").lower()
+        choice = input("Do you want to attack, defend, or use a health potion? ").lower()
         if choice == "attack":
             damage = random.randint(10, 20)
             enemy_health -= damage
             print(f"You deal {damage} damage to the enemy!")
         elif choice == "defend":
             print("You brace yourself for the enemy's attack.")
+        elif choice == "use health potion" and "health potion" in inventory:
+            player_health = min(100, player_health + 30)
+            inventory.remove("health potion")
+            print("You use a health potion and restore 30 health points!")
         else:
             print("Invalid choice. You lose your turn.")
         
@@ -172,6 +215,7 @@ def battle(player_name):
     return None
 
 def main():
+    global player_name
     player_name = start_game()
     current_location = explore_room
     while not game_over and current_location:

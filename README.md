@@ -49,3 +49,6 @@ The Python Adventure Game is a text-based adventure game where players explore v
 6. **Engaging in Battles**:
    - Choose to attack, defend, or use a health potion during battles.
    - Defeat enemies to progress in the game and earn points.
+
+## Example Gameplay
+![Adventure output](https://github.com/user-attachments/assets/9cf473a2-2954-47f9-a31e-5cfc8673566a)

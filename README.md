@@ -18,6 +18,7 @@ The Python Adventure Game is a text-based adventure game where players explore v
     ```bash
     git clone https://github.com/Sebdababo/Python-Adventure-Game.git
     cd Python-Adventure-Game
+    pip install -r requirements.txt
     ```
 
 2. **Run the Game**:
